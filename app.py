@@ -9,14 +9,21 @@ from langchain_classic.chains import RetrievalQA
 
 # --- UI Setup ---
 st.set_page_config(page_title="AI Document Intelligence", layout="wide")
-st.title("📄 AI Doc Analyzer (RAG System)")
+st.title("📄 AI Document Analyzer (RAG System)")
+
+# --- State Management Initialization ---
+if "messages" not in st.session_state:
+    st.session_state.messages = []  # To store the chat history
+
+if "vector_db" not in st.session_state:
+    st.session_state.vector_db = None  # To store the PDF brain
 
 # Sidebar for Setup & Clear Chat
 with st.sidebar:
     st.header("Settings")
     # Add a Clear Chat button
     if st.button("🗑️ Clear Chat History"):
-        st.session_state.messages = []
+        st.session_state.messages = []   # Correctly resets the existing lists
         st.rerun()
     
     # Adding Download History Button
@@ -32,13 +39,6 @@ with st.sidebar:
         mime="text/plain"
     )
     st.write("Built with Groq & LangChain (2026)")
-
-# --- State Management Initialization ---
-if "messages" not in st.session_state:
-    st.session_state.messages = []  # To store the chat history
-
-if "vector_db" not in st.session_state:
-    st.session_state.vector_db = None  # To store the PDF brain
 
 # --- 1: File Uploader ---
 uploaded_file = st.file_uploader("Upload a PDF for analysis", type="pdf")
@@ -70,7 +70,7 @@ if uploaded_file and st.session_state.vector_db is None:
 
 # --- 2: Chat Interface ---
 # Display existing messages from history
-for message in st.session_state.messages:
+for message in st.session_state.messages:    # Find the initialized list
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
@@ -109,4 +109,5 @@ if prompt := st.chat_input("Ask something about the document..."):
 
         st.session_state.messages.append({"role": "assistant", "content": answer})
     else:
+
         st.error("Please upload a PDF to begin.")
