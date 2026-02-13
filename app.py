@@ -19,7 +19,18 @@ with st.sidebar:
         st.session_state.messages = []
         st.rerun()
     
+    # Adding Download History Button
     st.divider()
+    chat_history_str = ""
+    for msg in st.session_state.messages:
+        chat_history_str += f"{msg['role'].capitalize()}: {msg['content']}\n\n"
+
+    st.download_button(
+        label="📥 Download Chat History",
+        data=chat_history_str,
+        file_name="chat_analysis.txt",
+        mime="text/plain"
+    )
     st.write("Built with Groq & LangChain (2026)")
 
 # --- State Management Initialization ---
@@ -29,7 +40,7 @@ if "messages" not in st.session_state:
 if "vector_db" not in st.session_state:
     st.session_state.vector_db = None  # To store the PDF brain
 
-# --- Phase 4.1: File Uploader ---
+# --- 1: File Uploader ---
 uploaded_file = st.file_uploader("Upload a PDF for analysis", type="pdf")
 
 if uploaded_file and st.session_state.vector_db is None:
@@ -38,18 +49,26 @@ if uploaded_file and st.session_state.vector_db is None:
         with open("temp.pdf", "wb") as f:
             f.write(uploaded_file.getbuffer())
         
-        # Ingestion Logic from Phases 2 & 3
-        loader = PyPDFLoader("temp.pdf")
-        pages = loader.load()
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
-        chunks = text_splitter.split_documents(pages)
-        
-        # Embedding & Storage
-        embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-        st.session_state.vector_db = Chroma.from_documents(chunks, embeddings)
-        st.success("PDF Indexed! You can now ask questions.")
+        try:
+            # Ingestion Logic
+            loader = PyPDFLoader("temp.pdf")
+            pages = loader.load() # This is where most errors occur
+            
+            # Continue with chunking if loading succeeds
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
+            chunks = text_splitter.split_documents(pages)
+            
+            # Embedding & Storage
+            embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+            st.session_state.vector_db = Chroma.from_documents(chunks, embeddings)
+            st.success("PDF Indexed successfully!")
 
-# --- Phase 4.2: Chat Interface ---
+        except Exception as e:
+            # Handle the error gracefully
+            st.error(f"❌ Error reading PDF: {e}")
+            st.stop() # Prevents the app from running rest of the code
+
+# --- 2: Chat Interface ---
 # Display existing messages from history
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
@@ -82,7 +101,7 @@ if prompt := st.chat_input("Ask something about the document..."):
         # Display assistant response
         with st.chat_message("assistant"):
             st.markdown(answer)
-            # Phase 6 Bonus: Simple Source Citation
+            # Simple Source Citation
             if response["source_documents"]:
                 with st.expander("View Sources"):
                     for doc in response["source_documents"]:
