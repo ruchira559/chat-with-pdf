@@ -85,6 +85,14 @@ chat-with-pdf/
 
 ---
 
+### 🛠️ Tech Stack & Skills
+- **AI/RAG:** LangChain, Llama-3.1, ChromaDB, HuggingFace Embeddings
+- **Interface:** Streamlit, Session State Management
+- **Inference:** Groq Cloud API (LPUs)
+- **Engineering:** Python 3.10+, Git, Cloud Deployment, Prompt Engineering
+
+---
+
 ## 🤝 Contact
 
 **Ruchir Agrawal** [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ruchir-a-308240128/)  
