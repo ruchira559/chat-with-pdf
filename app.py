@@ -90,4 +90,4 @@ if prompt := st.chat_input("Ask something about the document..."):
 
         st.session_state.messages.append({"role": "assistant", "content": answer})
     else:
-        st.error("Please upload a PDF first!")
+        st.error("Please upload a PDF to begin.")
